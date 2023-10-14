@@ -257,3 +257,44 @@ def get_inv_ngn2_infor(WEIGHT, INDEX, PROFIT, SYMBOL, interest):
 
     Top5ComsNgn2 = coms[mask_]
     return Nguong2, Top5ComsNgn2, max_profit, harmean(arr_profit)
+
+
+@nb.njit
+def get_inv_ngn1_2_infor(WEIGHT, INDEX, PROFIT, SYMBOL, interest):
+    '''
+    Output: Nguong1_2, GeoNgn1_2, HarNgn1_2
+    '''
+    size = INDEX.shape[0] - 1
+    Nguong1_2 = -1.7976931348623157e+308
+    for i in range(size-1, 0, -1):
+        start, end = INDEX[i], INDEX[i+1]
+        values = WEIGHT[start:end]
+        arrPro = PROFIT[start:end]
+        mask = np.argsort(arrPro)
+        n = int(np.ceil(float(len(mask)) / 5))
+        ngn = np.max(values[mask[:n]])
+        if ngn > Nguong1_2:
+            Nguong1_2 = ngn
+
+    C = WEIGHT > Nguong1_2
+    temp_profit = np.zeros(size-1)
+    for i in range(size-1, 0, -1):
+        start, end = INDEX[i], INDEX[i+1]
+        if np.count_nonzero(C[start:end]) == 0:
+            temp_profit[i-1] = 1.06
+        else:
+            temp_profit[i-1] = PROFIT[start:end][C[start:end]].mean()
+
+    GeoNgn1_2 = geomean(temp_profit)
+    HarNgn1_2 = harmean(temp_profit)
+
+    start, end = INDEX[0], INDEX[1]
+    mask = WEIGHT[start:end] > Nguong1_2
+    values = WEIGHT[start:end][mask]
+    coms = SYMBOL[start:end][mask]
+    mask_ = np.argsort(values)[::-1]
+    if len(mask_) > 5:
+        mask_ = mask_[:5]
+
+    Top5ComsNgn1_2 = coms[mask_]
+    return Nguong1_2, Top5ComsNgn1_2, GeoNgn1_2, HarNgn1_2
