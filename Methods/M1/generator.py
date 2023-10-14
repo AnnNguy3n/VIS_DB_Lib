@@ -95,7 +95,7 @@ class Generator(base.Base):
 
         self.history = [self.last_formula.copy(), self.last_divisor_idx]
         self.current = [self.last_formula.copy(), self.last_divisor_idx]
-        self.count = np.array([0, 100000, 0, 1000000000000])
+        self.count = np.array([0, 10000, 0, 1000000000000])
         last_operand = self.current[0].shape[0] // 2
         num_operand = last_operand
         if self.mode == 1:
