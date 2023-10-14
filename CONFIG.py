@@ -53,6 +53,12 @@ DB_FIELDS = {
         ("Top5ComsNgn1_2", "TEXT"),
         ("GeoNgn1_2", "REAL"),
         ("HarNgn1_2", "REAL")
+    ],
+    "get_inv_ngn1_3_infor": [
+        ("Nguong1_3", "REAL"),
+        ("Top5ComsNgn1_3", "TEXT"),
+        ("GeoNgn1_3", "REAL"),
+        ("HarNgn1_3", "REAL")
     ]
 }
 

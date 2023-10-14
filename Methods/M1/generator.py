@@ -295,6 +295,9 @@ class Generator(base.Base):
                 Top5ComsNgn1_2 = list_value[n+14]
                 list_value[n+14] = "_".join(self.symbol_name[sym] for sym in Top5ComsNgn1_2)
 
+                Top5ComsNgn1_3 = list_value[n+18]
+                list_value[n+18] = "_".join(self.symbol_name[sym] for sym in Top5ComsNgn1_3)
+
         query = qf.insert_rows(self.current_table_name, self.list_of_list_value)
         # print(query)
         self.cursor.execute(query)
