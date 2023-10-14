@@ -104,3 +104,77 @@ def get_inv_ngn_infor(WEIGHT, INDEX, PROFIT, SYMBOL, interest):
 
     Top5Coms = coms[mask_]
     return Nguong, Top5Coms, max_profit, HarNgn
+
+
+@nb.njit
+def countTrueFalse(a, b):
+    countTrue = 0
+    countFalse = 0
+    len_ = len(a)
+    for i in range(len_ - 1):
+        for j in range(i+1, len_):
+            if a[i] == a[j] and b[i] == b[j]:
+                countTrue += 1
+            else:
+                if (a[i] - a[j]) * (b[i] - b[j]) > 0:
+                    countTrue += 1
+                else:
+                    countFalse += 1
+
+    return countTrue, countFalse
+
+
+@nb.njit
+def get_tf_score(WEIGHT, INDEX, PROFIT, SYMBOL, interest):
+    '''
+    Output: TrFScr
+    '''
+    countTrue = 0
+    countFalse = 0
+    for i in range(1, INDEX.shape[0] - 1):
+        start, end = INDEX[i], INDEX[i+1]
+        t, f = countTrueFalse(WEIGHT[start:end], PROFIT[start:end])
+        countTrue += t
+        countFalse += f
+
+    return countTrue / (countFalse + 1e-6)
+
+
+@nb.njit
+def calculate_ac_coef(arr):
+    if len(arr) < 2: return 0.0
+    sum_ = 0.0
+    l = len(arr)
+    for i in range(l - 1):
+        a = arr[i]
+        b = arr[i+1:]
+        nume = a - b
+        deno = np.abs(a) + np.abs(b)
+        deno[deno == 0.0] = 1.0
+        sum_ += np.sum(nume/deno)
+
+    result = sum_ / (l*(l-1))
+    return max(result, 0.0)
+
+
+@nb.njit
+def get_ac_score(WEIGHT, INDEX, PROFIT, SYMBOL, interest):
+    '''
+    Output: AccScr
+    '''
+    size = INDEX.shape[0]-1
+    arr_coef = np.zeros(size-1)
+
+    for i in range(size-1, 0, -1):
+        idx = size-1-i
+        start, end = INDEX[i], INDEX[i+1]
+        weight_ = WEIGHT[start:end]
+        profit_ = PROFIT[start:end]
+        mask = weight_ != -1.7976931348623157e+308
+        weight = weight_[mask]
+        profit = profit_[mask]
+        weight = weight[np.argsort(profit)[::-1]]
+        arr_coef[idx] = calculate_ac_coef(weight)
+        if arr_coef[idx] == 0.0: break
+
+    return geomean(arr_coef)

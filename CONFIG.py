@@ -35,7 +35,14 @@ DB_FIELDS = {
         ("Top5Coms", "TEXT"),
         ("GeoNgn", "REAL"),
         ("HarNgn", "REAL")
-    ]
+    ],
+    "get_tf_score": [
+        ["TrFScr", "REAL"]
+    ],
+    "get_ac_score": [
+        ["AccScr", "REAL"]
+    ],
+    
 }
 
 # MODE: "generate" or "update"
