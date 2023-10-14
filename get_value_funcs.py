@@ -178,3 +178,82 @@ def get_ac_score(WEIGHT, INDEX, PROFIT, SYMBOL, interest):
         if arr_coef[idx] == 0.0: break
 
     return geomean(arr_coef)
+
+
+@nb.njit
+def get_inv_ngn2_infor(WEIGHT, INDEX, PROFIT, SYMBOL, interest):
+    '''
+    Output: Nguong2, Top5ComsNgn2, GeoNgn2, HarNgn2
+    '''
+    size = INDEX.shape[0] - 1
+    arr_profit = np.zeros(size-2)
+    temp_profit = np.zeros(size-2)
+    max_profit = -1.0
+    last_reason = 0
+
+    list_loop = np.zeros((size-1)*5)
+    for k in range(size-1, 0, -1):
+        start, end = INDEX[k], INDEX[k+1]
+        temp_weight = WEIGHT[start:end].copy()
+        temp_weight[::-1].sort()
+        list_loop[5*(k-1):5*k] = temp_weight[:5]
+
+    list_loop = np.unique(list_loop)
+    for v in list_loop:
+        temp_profit[:] = 0.0
+        reason = 0
+        isbg = WEIGHT > v
+        for i in range(size - 2):
+            start, end = INDEX[-i-3], INDEX[-i-2]
+            inv_cyc_val = isbg[start:end]
+            if reason == 0:
+                inv_cyc_sym = SYMBOL[start:end]
+                pre_cyc_val = isbg[end:INDEX[-i-1]]
+                pre_cyc_sym = SYMBOL[end:INDEX[-i-1]]
+                coms = np.intersect1d(pre_cyc_sym[pre_cyc_val], inv_cyc_sym[inv_cyc_val])
+                isin = np.full(end-start, False)
+                for ii in range(end-start):
+                    if inv_cyc_sym[ii] in coms:
+                        isin[ii] = True
+                lst_pro = PROFIT[start:end][isin]
+            else:
+                lst_pro = PROFIT[start:end][inv_cyc_val]
+
+            if len(lst_pro) == 0:
+                temp_profit[i] = interest
+                if np.count_nonzero(inv_cyc_val) == 0:
+                    reason = 1
+            else:
+                temp_profit[i] = np.mean(lst_pro)
+                reason = 0
+
+        new_profit = geomean(temp_profit)
+        if new_profit > max_profit:
+            Nguong2 = v
+            max_profit = new_profit
+            arr_profit[:] = temp_profit
+            last_reason = reason
+
+    isbg = WEIGHT > Nguong2
+    start, end = INDEX[0], INDEX[1]
+    inv_cyc_val = isbg[start:end]
+    inv_cyc_sym = SYMBOL[start:end]
+    if last_reason == 0:
+        pre_cyc_val = isbg[end:INDEX[2]]
+        pre_cyc_sym = SYMBOL[end:INDEX[2]]
+        coms = np.intersect1d(pre_cyc_sym[pre_cyc_val], inv_cyc_sym[inv_cyc_val])
+        isin = np.full(end-start, False)
+        for ii in range(end-start):
+            if inv_cyc_sym[ii] in coms:
+                isin[ii] = True
+        values = WEIGHT[start:end][isin]
+    else:
+        coms = inv_cyc_sym[inv_cyc_val]
+        values = WEIGHT[start:end][inv_cyc_val]
+
+    mask_ = np.argsort(values)[::-1]
+    if len(mask_) > 5:
+        mask_ = mask_[:5]
+
+    Top5ComsNgn2 = coms[mask_]
+    return Nguong2, Top5ComsNgn2, max_profit, harmean(arr_profit)

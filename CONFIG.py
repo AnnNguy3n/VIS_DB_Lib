@@ -42,7 +42,12 @@ DB_FIELDS = {
     "get_ac_score": [
         ["AccScr", "REAL"]
     ],
-    
+    "get_inv_ngn2_infor" : [
+        ("Nguong2", "REAL"),
+        ("Top5ComsNgn2", "TEXT"),
+        ("GeoNgn2", "REAL"),
+        ("HarNgn2", "REAL")
+    ]
 }
 
 # MODE: "generate" or "update"
