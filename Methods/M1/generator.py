@@ -11,6 +11,7 @@ import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
+@nb.njit
 def decode_formula(f, len_):
     len_f = len(f)
     rs = np.full(len_f*2, 0)
